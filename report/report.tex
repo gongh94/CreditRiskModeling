@@ -1,0 +1,350 @@
+%% Based on a TeXnicCenter-Template by Tino Weinkauf.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% HEADER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper,twoside,10pt]{report}
+% Alternative Options:
+%	Paper Size: a4paper / a5paper / b5paper / letterpaper / legalpaper / executivepaper
+% Duplex: oneside / twoside
+% Base Font Size: 10pt / 11pt / 12pt
+
+
+%% Language %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[USenglish]{babel} %francais, polish, spanish, ...
+\usepackage[T1]{fontenc}
+\usepackage[ansinew]{inputenc}
+
+\usepackage{lmodern} %Type1-font for non-english texts and characters
+
+%% Packages for Graphics & Figures %%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx} %%For loading graphic files
+%\usepackage{subfig} %%Subfigures inside a figure
+%\usepackage{pst-all} %%PSTricks - not useable with pdfLaTeX
+
+%% Please note:
+%% Images can be included using \includegraphics{Dateiname}
+%% resp. using the dialog in the Insert menu.
+%% 
+%% The mode "LaTeX => PDF" allows the following formats:
+%%   .jpg  .png  .pdf  .mps
+%% 
+%% The modes "LaTeX => DVI", "LaTeX => PS" und "LaTeX => PS => PDF"
+%% allow the following formats:
+%%   .eps  .ps  .bmp  .pict  .pntg
+
+
+%% Math Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}%
+\usepackage{graphicx}
+\usepackage{mathrsfs}
+
+% Theorem like environments
+%
+\newtheorem{theorem}{Theorem}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% DOCUMENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\pagestyle{empty} %No headings for the first pages.
+
+
+%% Title Page %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ==> Write your text here or include other files.
+
+%% The simple version:
+\title{Price CDS and risky bonds with CIR model}
+\author{Hangfeng Gong}
+%\date{} %%If commented, the current date is used.
+\maketitle
+
+%% Inhaltsverzeichnis %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tableofcontents %Table of contents
+
+\cleardoublepage %The first chapter should start on an odd page.
+
+\pagestyle{plain} %Now display headings: headings / fancy / ...
+
+
+
+%% Chapters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ==> Write your text here or include other files.
+
+%\input{intro} %You need a file 'intro.tex' for this.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ==> Some hints are following:
+
+
+%%\begin{abstract}
+%%\end{abstract}
+
+\chapter{CDS pricing}
+Consider a $CDS$ with the notional of $\$1$, written at time $t$, with payment dates $T_1, ..., T_n$, and the annualized fee/premium $F$. Assume that in default, the CDS pays $1-R$ right after the default. 
+
+\section{the default leg}
+The present value of the default leg is given \[ DL(t,T) = E[(1-R)e^{-\int_t^{\tau}r(s)ds}\mathbb{I}_{\tau<T}] .\] Assuming recovery, risk free rates, and default are all independent:
+\begin{equation} 
+\begin{split}
+DL(t,T) & = (1-E[R])E[Z(t,\tau)\mathbb{I}_{\tau < T}] \\
+ & = -(1-E[R])\int_t^T Z(t,s) \frac{dQ(t,s)}{ds} ds.
+\end{split}
+\end{equation}
+We further assume that $R$ is a constant without loss of generality: \[ DL(t,T)= -(1-R)\int_t^T Z(t,s) \partial_s Q(t,s) ,\] where $\partial_s Q(t,s) \equiv \frac{dQ(t,s)}{ds} ds$.
+
+\section{the fee leg}
+The value of the fee leg (FL) is typically represented in terms of risky annuity(RA), which is the value of a fee leg paying a unit coupon. \[ FL(t,T) = F \cdot RA(t,T).\]
+Ignoring the accrued coupon on default (which we will come back to), the present value of the risky annuity as seen at $t$ is
+\[ RA(t,T) = E[\sum_{i=1}^n e^{-\int_t^{T_i} r(s)ds} \Delta(T_{i-1},T_i) \mathbb{I}_{\tau \geq T_i}],\] where $\Delta(T_{i-1},T_i)$ is the year fraction of the ith coupon under the day count convention. Under the assumption of independence between rates and default, this becomes: \[ RA(t,T) = \sum_{i=1}^n \bar{Z}(t,T) \Delta(T_{i-1},T_i) = \sum_{i=1}^n Z(t,T_i) Q(t,T_i) \Delta(T_{i-1},T_i).\] \\
+Given default happens in $[T_{i-1},T_i)$, the accrued coupon is an amount equal to $\Delta(T_{i-1},\tau)$ paid at $\tau$. The present value of the accrued coupon is given by \[ AC(t,T) = E[\sum_{i=1}^n e^{-\int_t^{\tau}r(s)ds} \Delta(T_{i-1},\tau) \mathbb{I}_{T_{i-1} \leq \tau < T_i]}.\] Under the same independence assumptions, \[ AC(t,T) = - \sum_{i=1}^n \int_{T_{i-1}}^{T_i} Z(t,s) \Delta(T_{i-1},s) \partial_s Q(t,s).\] Hence, the full expression for the risky annuity is \[ RA(t,T) = \sum_{i=1}^n \bar{Z}(t,T) \Delta(T_{i-1},T_i) - \sum_{i=1}^n \int_{T_{i-1}}^{T_i} Z(t,s) \Delta(T_{i-1},s) \partial_s Q(t,s)\]. \\
+
+\section{par spread}
+The mark-to-market value of a CDS with annualized coupon $F$, maturing at $T$ and observed at $t$ is given by \[ CDS(t,T) = DL(t,T) - FL(t,T) = DL(t,T) - F \cdot RA(t,T).\] The par spread is the value of the coupon, $S(t,T)$, that causes the CDS to price at par, i.e. it equates the default and fee legs: \[ S(t,T) = DL(t,T)/RA(t,T).\]
+
+\section{risky bonds}
+We consider a coupon-bearing risky bond with zero recovery here. Then the price of a coupon bond with zero recovery is
+\begin{equation}
+V^B(0,T) = c \sum_{i=1}^N Z(0,t_i)Q(0,t_i) + N * Z(0,T) * Q(0,T).
+\end{equation}
+
+\chapter{CIR model}
+We use CIR process to generate hazard rates: \[ d\lambda_t = k(\theta - \lambda)dt + \sigma \sqrt{\lambda_t} dW_t\]
+\begin{itemize}
+  \item The process is non-negative
+  \item $\theta$ is the long time mean of $\lambda_t$
+	\item $k$ is the mean rate of reversion to the long-run mean: \[ E_t(\lambda_s)= \theta + e^{-k(s-t)}(\lambda_t - \theta)\]
+	\item $\sigma$ is the volatility coefficient
+\end{itemize}
+The process can be discretized as \[ \lambda_{t+\Delta t} - \lambda_t \simeq k(\theta - \lambda_t)\Delta t + \sigma \sqrt{\lambda_t}\epsilon_t.\]
+It is a case of affine process, where the survival probability from $t$ to $s$ at any $t < \tau$, where $\tau$ is the default time, is generally give by the following expression: \[ Q(t,s) = e^{\alpha(s-t) + \beta(s-t)\lambda(t)},\] and the coefficients $\alpha(t,s)$ and $\beta(t,s)$ satisfy certain ODE's. Affine processes have the form \[ \lambda_t = p + q X_t, \] where $p$ and $q$ are constant, and $X_t$ is a n-dimensional Markov process. 
+
+\chapter{Input Settings}
+The interest rate is deterministic, flat and $r = 1\%$. Recovery rate is assumed to be 50\%. CDS fee is payable annually. We calibrate the CIR model on four CDS par spread curves quoted in basis points: 
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c|c|c|c|c|c|c| } 
+ \hline
+  Curve id & 1Y & 2Y & 3Y & 4Y & 5Y & 7Y & 10Y \\ 
+ \hline
+	Curve 1  & 18.01 & 20.98 & 23.06 & 31.16 & 34.92 & ? &39.13 \\ 
+ \hline
+  Curve 2  & 52.06 & 78.08 & 77.89 & 104.70 & 119.97 & ? &125.96 \\ 
+ \hline
+	Curve 3  & 247.19 & 237.08 & 229.04 & 217.03 & 199.01 & ? & 149.00 \\ 
+ \hline
+	Curve 4  & 59.32 & 75.13 & 83.00 & 105.45 & 116.00 & ? & 126.00 \\ 
+ \hline
+\end{tabular}
+\caption{CDS par spread curves}
+\label{spread_curve}
+\end{table}
+
+In each of these calibrated environments we test for following items:
+\begin{itemize}
+  \item CDS par spread of a 7 year CDS
+  \item Sensitivity of this 7 year par spread to the parallel shift to the input  curve
+	\item Price of a 5\% risky bond maturing in 8 years with \$ 5 coupon paid annually and \$ 100 payment at the maturity
+	\item Sensitivity of this risky bond price to the parallel shift in the input curve
+\end{itemize}
+Parallel shift is defined as each tenor is shifted up by 1bp.
+
+\chapter{Bootstrapping}
+To calculate the implied default probabilities, we impose the fair price constraint \[ FL = DL\]. Here, we use the following short notation
+\begin{itemize}
+  \item $Q_i \equiv Q(t,T_i)$
+  \item $\delta_i \equiv \Delta(T_{i-1},T_i)$
+	\item $Z_i \equiv Z(t,T_i)$
+	\item $S(0,n) \equiv S_n$
+\end{itemize}
+\textbf{For convenience, we ignore the accrued coupon in what follows.} By splitting off the terms containing $Q_n = Q(t,T_n)$, we obtain:
+\begin{equation}
+\sum_{i=1}^{n-1} Z_i Q_n \delta_i S_i + Z_n Q_n \delta_n S_n = (1-R) \sum_{i=1}^{n-1} Z_i [Q_{i-1}-Q_i] + (1-R)Z_n [Q_{n-1} - Q_n],
+\end{equation}
+and solve for $Q_n$:
+\[ Q_n = \frac{Z_n (1-R) Q_{n-1} - \sum_{i=1}^{n-1} Z_i[Q_i \delta_i S_n - (1-R)(Q_{i-1}-Q_i)]}{Z_n(\delta_n S_n + 1 - R)}.\]
+Assume that there are market CDS quotes $S_1, S_2, \dots, S_n$ for all maturities $T_1, T_2, \dots, T_n$. We can then easily solve the above equation recursively:
+\[ Q_0 = 1\]
+\[ Q_1 = \frac{1}{1 + \delta_1 S_1/(1-R)}\]
+\[ Q_2 = \frac{Q_1}{1 + \delta_2 S_2 / (1-R)} - \frac{Z_1}{Z_2} \frac{Q_1(1+\delta_1 S_2/(1-R)) - 1}{1+\delta_2 S_2/(1-R)}\]
+etc.
+
+\chapter{Calibration}
+We need to determine the coefficients of CIR model from input par spread curves. Suppose that we have obtained the implied survival probabilities through bootstrapping on spread curves, say $Q^{market}_i$, where $i$ indexes known tenors. The formula (\ref{fk:sol}), $u(t, \lambda_0)$,  gives expected values of survival probabilities, $Q^{model}_i$implied by CIR model given a specified 4-tuple of $(\lambda_0, k, \theta, \sigma)$. We need to find an optional 4-tuple $(\lambda_0, k, \theta, \sigma)$ to minimize the difference between market implied survival probabilities, $Q^{market}_i$, and model implied survival probabilities, $Q^{model}_i$:
+\begin{equation}
+\min_{(\lambda_0, k, \theta, \sigma)} \sum_i (Q^{market}_i - Q^{model}_i(\lambda_0, k, \theta, \sigma))^2.
+\end{equation}
+
+\chapter{Results}
+We failed to calibrate our model on curve 3 due to some technical issues.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c|c|c|c|c|c|c| } 
+ \hline
+					 & $Q(1Y)$ & $Q(2Y)$ & $Q(3Y)$ & $Q(4Y)$ & $Q(5Y)$ & $Q(7Y)$ & $Q(10Y)$ \\ 
+ \hline
+	Curve 1  & 0.966411 & 0.991652 & 0.986264 & 0.975270 & 0.965481 & N/A & 0.924852 \\ 
+ \hline
+  Curve 2  & 0.989695 & 0.969356 & 0.954561 & 0.919369 & 0.886101 & N/A & 0.781585 \\ 
+ \hline
+	Curve 3  & 0.952891 & 0.911612 & 0.874593 & 0.844644 & 0.825056 & N/A & 0.759260 \\ 
+ \hline
+	Curve 4  & 0.988275 & 0.970536 & 0.951609 & 0.918895 & 0.889961 & N/A & 0.781378 \\ 
+ \hline
+\end{tabular}
+\caption{Implied default probabilities from bootstrapping}
+\label{implied_Q}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c|c|c|c| } 
+ \hline
+					 & $\lambda_0$ & $k$ & $\theta$ & $\sigma$  \\ 
+ \hline
+	Curve 1  & 0.004360 & 0.067839 & 0.017330 & 0.015632\\ 
+ \hline
+  Curve 2  & 0.01672917 & 0.02427247 & 0.09104054 & 0.00677026 \\ 
+ \hline
+	Curve 3  & N/A & N/A & N/A & N/A \\ 
+ \hline
+	Curve 4  & 0.00104975 & 0.89655486 & 0.02803922 & 0.09404974 \\ 
+ \hline
+\end{tabular}
+\caption{Coefficients from calibration}
+\label{calibration}
+\end{table}
+
+The sensitivity is calculated by $\frac{\partial P}{\partial S} \approx \frac{\Delta P}{\Delta S} = \frac{P'-P}{1bp}$; $P$ is calculated from the calibrated model of an input curve, and $P'$ is from the re-fitted model after the curve is shifted.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c|c|c| } 
+ \hline
+					 & par spread & par spread 2 & sensitivity(bp/bp)\\ 
+ \hline
+	Curve 1  & 34.93 	&	34.96 &	0.03\\ 
+ \hline
+  Curve 2  & 111.29  	&	115.64 &  4.35\\ 
+ \hline
+	Curve 3  & N/A  	&	N/A & N/A\\ 
+ \hline
+	Curve 4  & 119.10 	&	125.23& 6.13 \\ 
+ \hline
+\end{tabular}
+\caption{CDS par spread of a 7 year CDS and its sensitivity to the parallel shift of the input curve}
+\label{7y}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c|c|c| } 
+ \hline
+					 & price & price 2 &sensitivity(dollar/bp)\\ 
+ \hline
+	Curve 1  & 124.23 	&	123.15 & -1.08\\ 
+ \hline
+  Curve 2  & 111.31  &	110.47& -0.84\\ 
+ \hline
+	Curve 3  & N/A	& N/A & N/A \\ 
+ \hline
+	Curve 4  & 110.66 & 109.01	& -1.65\\ 
+ \hline
+\end{tabular}
+\caption{Price of a 5\% risky bond maturing in 8 years and its sensitivity to the parallel shift of the input curve}
+\label{risky_bond}
+\end{table}
+
+\chapter{Validation}
+For validation purpose, we used a R package \texttt{credule} to calculate CDS spreads and price of risky bonds based on the given data. The functions in the package use the reduced-form approach as we do with CIR model, but the documentation does not disclose which model they used in those functions. It is a standardized package so we reply on the results to cross-validate the results from our model.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c|c|c| } 
+ \hline
+					 & price & price 2 &sensitivity(bp/bp)\\ 
+ \hline
+	Curve 1  & 37.33 	&	38.33 & 1\\ 
+ \hline
+  Curve 2  & 123.39  &	124.39 & 1\\ 
+ \hline
+	Curve 3  & 170.65	& 171.65 & 1\\ 
+ \hline
+	Curve 4  & 121.72 & 127.27	& 5.55\\ 
+ \hline
+\end{tabular}
+\caption{Validation: 7Y par spread and its sensitivity}
+\label{v7y}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |c|c|c|c| } 
+ \hline
+					 & price & price 2 &sensitivity(dollar/bp)\\ 
+ \hline
+	Curve 1  & 123.99 	&	123.82 & -0.17\\ 
+ \hline
+  Curve 2  & 110.33  &	110.18 & -0.15\\ 
+ \hline
+	Curve 3  & 103.62	& 103.48 & -0.14 \\ 
+ \hline
+	Curve 4  & 110.47 & 110.32	& -0.15\\ 
+ \hline
+\end{tabular}
+\caption{Validation: price of the 8Y risky bond and the sensitivity}
+\label{v_risky}
+\end{table}
+
+
+\chapter{Discussion}
+The par spreads and bond prices from simulation are ostensibly reasonable in magnitude; for example, the 7Y spread is output near 35, while 5Y and 10Y are 34.92 and 39.13, respectively. However, the results are actually problematic after examination, because the deviation from the true value are probably more than 100 bp, which would be disastrous in real-world practicing. \\
+One problem lays in the bootstrapping, since we ignored the accrued interest. Another problem is due to lack of preciseness, especially in calibration. We employed \texttt{Nelder-Mead}, an algorithm for unconstrained minimization, to do calibration, during which we have to manually check if the four parameters are between 0 and 1, and $2 k \theta > \sigma^2$. It would be better to use algorithms of constrained minimization, while most of them demand calculating Jocabians and Hessians of target function, which is overly complicated in our case. Because of un-robuseness of \texttt{Nelder-Mead}, we had to lower the error tolerance when doing calibration, and even worse, we still failed on the curve 3.
+
+\begin{thebibliography}{9}
+\bibitem {marco} Marco Pereira, class lecture notes
+\bibitem {ref1} Unknown author, \textit{Random walks down Wall Street, Stochastic Processes in Python}, \\\texttt{http://www.turingfinance.com/random-walks-down-wall-street-stochastic-processes-in-python/}
+\bibitem {opt} Unknown author, \textit{Optimization (scipy.optimize)}, \\\texttt{https://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html}
+
+\end{thebibliography}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% BIBLIOGRAPHY AND OTHER LISTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% A small distance to the other stuff in the table of contents (toc)
+%\addtocontents{toc}{\protect\vspace*{\baselineskip}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% APPENDICES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+%% ==> Write your text here or include other files.
+%\input{FileName} %You need a file 'FileName.tex' for this.
+\chapter{Markov processes}
+The process $X_t$ is \textbf{Markov} if for any reasonable function $g(X)$ and any fixed time $t$ and $s > t$ we have \[ E_t[g(X_s)] \equiv E[g(X_s)|\mathcal{F}_t] = f(X_t),\] for some function $f$. The Markov property holds, in particular, for a jump diffusion \[ dX_t = \mu(X_t)dt + \sigma(X_t)dW_t + dN_t.\] For some discount-rate function $R$, if $X_t$ is Markov, we have \[ E_t[exp(- \int_{t}^{s} R(X_t)du)] = F(X_t). \] For affine processes, $R$ is a linear function of a Markov state variable $X_t$. Then function $F(X_t)$ is also of exponential-affine form: \[ E_t[exp(- \int_{t}^{s}[\rho_0 + \rho_1 X_u]du)] = e^{\alpha(s-t)+\beta(s-t)X_t}.\]
+
+\chapter{Feynman-Kac equation}
+Assume $\lambda_t = f(X_t)$, where $dX_t = \mu(X_t)dt + \sigma(X_t)dW_t$. Consider pricing today (time $t$) of a bond with payoff $h(X_T)$ at maturity $T$ assuming interest rate is constant. The price is \[ u(t,x) = E_{t,x}[e^{-r(T-t)}h(X_T)\mathbb{I}_{\tau_t > T}].\] Then $u(t,x)$ satisfies the Feynman-Kac PDE (recall here $\lambda_t = f(X_t)$: \[ u_t + \mathcal{L}u - (f(x)+r)u = 0, \] with the boundary condition $u(T,x)=h(x)$, where $\mathcal{L} = \frac{1}{2}\sigma^2(x)\frac{\partial^2}{\partial x^2} + \mu(x)\frac{\partial}{\partial x}$. \\
+In the CIR model, we take $\mu(x) = k(\theta - x)$ and $\sigma(x) = \sigma \sqrt{x}$ with $\sigma^2 < 2a\theta$. The Feynman-Kac PDE now reads \[ u_t + \frac{1}{2} \sigma^2 x u_{xx} + k(\theta - x)u_x - xu = 0, u(T,x) = 1.\] Here we take $r=0$, $f(x)=x$ and $h(x)=1$. Assume the following ansatz for $u$: 
+\begin{equation} \label{fk:sol}
+u(t,x) = A(T-t)e^{-B(T-t)x}.
+\end{equation} 
+Substitute this into the Feynman-Kac PDE and equate the like powers of $x$. This yields \[ - \frac{A'}{A} - k \theta B=0, A(0) = 1\] and \[ B' + \frac{1}{2} \sigma^2 B^2 + kB -1 =0, B(0)=0,\]
+where the initial conditions for $A$, $B$ come through the terminal condition for $u(t,x)$. Note that the latter is a Ricatti equation that can be solved by the substitution $B=\gamma \frac{C'}{C}$. Choose $\gamma$ so that the $\sigma^2$ terms cancel out. This yields the solution 
+\begin{equation} \label{fk:b}
+B(s) = \frac{2(e^{\xi s}-1)}{(\xi +k)(e^{\xi s}-1) +2\xi},
+\end{equation} 
+and 
+\begin{equation} \label{fk:a}
+A(s) = (\frac{2\xi e^{(\xi +k)s/2}}{(\xi+k)(e^{\xi s}-1)+2\xi})^{\frac{2k\theta}{\sigma^2}}.
+\end{equation}
+Here $\xi = \sqrt{k^2 + 2 \sigma^2}$.
+\end{document}
+
